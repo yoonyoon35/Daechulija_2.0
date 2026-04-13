@@ -2,6 +2,16 @@ import type { ComponentType } from "react";
 import { Dsr40MortgageLimitBody, dsr40MortgageLimitMeta } from "@/lib/guide/articles/dsr-40-mortgage-limit";
 import { BogeumjariVsDidimdolBody, bogeumjariVsDidimdolMeta } from "@/lib/guide/articles/bogeumjari-vs-didimdol";
 import { MortgageRateStatus2026Body, mortgageRateStatus2026Meta } from "@/lib/guide/articles/mortgage-rate-status-2026";
+import {
+  FirstTimeHomebuyerBenefits2026Body,
+  firstTimeHomebuyerBenefits2026Meta,
+} from "@/lib/guide/articles/first-time-homebuyer-benefits-2026";
+import {
+  EqualPaymentVsEqualPrincipalBody,
+  equalPaymentVsEqualPrincipalMeta,
+} from "@/lib/guide/articles/equal-payment-vs-equal-principal";
+import { PrepaymentFeeCalculationBody, prepaymentFeeCalculationMeta } from "@/lib/guide/articles/prepayment-fee-calculation";
+import { VariableVsFixedRate2026Body, variableVsFixedRate2026Meta } from "@/lib/guide/articles/variable-vs-fixed-rate-2026";
 
 export type GuideArticle = {
   slug: string;
@@ -27,6 +37,22 @@ export const guideArticles: readonly GuideArticle[] = [
   {
     ...mortgageRateStatus2026Meta,
     Body: MortgageRateStatus2026Body,
+  },
+  {
+    ...firstTimeHomebuyerBenefits2026Meta,
+    Body: FirstTimeHomebuyerBenefits2026Body,
+  },
+  {
+    ...equalPaymentVsEqualPrincipalMeta,
+    Body: EqualPaymentVsEqualPrincipalBody,
+  },
+  {
+    ...prepaymentFeeCalculationMeta,
+    Body: PrepaymentFeeCalculationBody,
+  },
+  {
+    ...variableVsFixedRate2026Meta,
+    Body: VariableVsFixedRate2026Body,
   },
 ];
 

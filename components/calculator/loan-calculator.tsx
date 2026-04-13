@@ -28,6 +28,11 @@ const ScheduleDownloadButtons = dynamic(
   { ssr: false },
 );
 
+const EMPTY_RESULT: CalculationResult = {
+  monthlyPayment: 0,
+  schedule: [],
+};
+
 function addCommas(value: string): string {
   const numValue = removeCommas(value);
   if (!numValue) return "";
@@ -77,9 +82,10 @@ export function LoanCalculator() {
   const [compareMode, setCompareMode] = React.useState(false);
   const [compareType, setCompareType] = React.useState<RepaymentType | "">("");
 
-  const [result, setResult] = React.useState<CalculationResult | null>(null);
+  const [result, setResult] = React.useState<CalculationResult>(EMPTY_RESULT);
   const [compareResult, setCompareResult] = React.useState<CalculationResult | null>(null);
   const [exportData, setExportData] = React.useState<ScheduleExportData | null>(null);
+  const [hasCalculated, setHasCalculated] = React.useState(false);
 
   const resultRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -176,6 +182,7 @@ export function LoanCalculator() {
 
     setResult(primary);
     setCompareResult(second);
+    setHasCalculated(true);
 
     const totalPayment = primary.schedule.reduce((s, r) => s + r.payment, 0);
     const totalInterest = totalPayment - loanAmount;
@@ -221,7 +228,17 @@ export function LoanCalculator() {
   ]);
 
   const summary = React.useMemo(() => {
-    if (!result) return null;
+    if (!hasCalculated) {
+      return {
+        monthly: 0,
+        totalPay: 0,
+        totalInt: 0,
+        monthlyDiff: null as number | null,
+        totalPayDiff: null as number | null,
+        totalIntDiff: null as number | null,
+      };
+    }
+
     const totalPayment = result.schedule.reduce((s, r) => s + r.payment, 0);
     const totalInterest = totalPayment - (parseFloat(removeCommas(loanAmountDisplay)) || 0);
     if (!compareResult) {
@@ -244,7 +261,7 @@ export function LoanCalculator() {
       totalPayDiff: totalPayment - cTotal,
       totalIntDiff: totalInterest - cInt,
     };
-  }, [result, compareResult, loanAmountDisplay]);
+  }, [result, compareResult, loanAmountDisplay, hasCalculated]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
@@ -422,111 +439,115 @@ export function LoanCalculator() {
           <CardTitle className="text-xl">{compareResult ? "비교 결과" : "계산 결과"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {result && summary ? (
-            <>
-              <div className="grid gap-3 sm:grid-cols-1" role="list">
-                <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
-                  <span className="text-muted-foreground text-sm">월 상환액</span>
-                  <span className="text-lg font-semibold tabular-nums">
-                    {formatNumber(summary.monthly)}원
-                    {summary.monthlyDiff != null ? (
-                      <DiffSpan value={summary.monthlyDiff} />
-                    ) : null}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
-                  <span className="text-muted-foreground text-sm">총 상환액</span>
-                  <span className="text-lg font-semibold tabular-nums">
-                    {formatNumber(summary.totalPay)}원
-                    {summary.totalPayDiff != null ? <DiffSpan value={summary.totalPayDiff} /> : null}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
-                  <span className="text-muted-foreground text-sm">총 이자액</span>
-                  <span className="text-lg font-semibold tabular-nums">
-                    {formatNumber(summary.totalInt)}원
-                    {summary.totalIntDiff != null ? <DiffSpan value={summary.totalIntDiff} /> : null}
-                  </span>
-                </div>
+          <>
+            <div className="grid gap-3 sm:grid-cols-1" role="list">
+              <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
+                <span className="text-muted-foreground text-sm">월 상환액</span>
+                <span className="text-lg font-semibold tabular-nums">
+                  {formatNumber(summary.monthly)}원
+                  {summary.monthlyDiff != null ? (
+                    <DiffSpan value={summary.monthlyDiff} />
+                  ) : null}
+                </span>
               </div>
-
-              <PaymentChart
-                schedule={result.schedule}
-                compareSchedule={compareResult?.schedule}
-                labelPrimary={repaymentTypeLabels[repaymentType]}
-                labelCompare={compareType ? repaymentTypeLabels[compareType as RepaymentType] : "비교"}
-              />
-
-              <div className="text-muted-foreground space-y-2 text-xs leading-relaxed">
-                {compareResult ? (
-                  <p>
-                    파란색 실선은 선택한 상환 방식, 주황색 점선은 비교 방식의 월상환액입니다. 빨간색 괄호는 더 많이 상환(불리), 초록색은 더 적게
-                    상환(유리)을 뜻합니다.
-                  </p>
-                ) : (
-                  <p>
-                    월상환액은 상환원금과 이자의 합입니다. 원리금균등상환은 월상환액이 일정하고, 원금균등상환은 초기에 높고 점차 줄어듭니다.
-                  </p>
-                )}
+              <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
+                <span className="text-muted-foreground text-sm">총 상환액</span>
+                <span className="text-lg font-semibold tabular-nums">
+                  {formatNumber(summary.totalPay)}원
+                  {summary.totalPayDiff != null ? <DiffSpan value={summary.totalPayDiff} /> : null}
+                </span>
               </div>
-            </>
-          ) : (
-            <p className="text-muted-foreground text-sm">조건을 입력한 뒤 계산하기를 눌러 결과를 확인하세요.</p>
-          )}
+              <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
+                <span className="text-muted-foreground text-sm">총 이자액</span>
+                <span className="text-lg font-semibold tabular-nums">
+                  {formatNumber(summary.totalInt)}원
+                  {summary.totalIntDiff != null ? <DiffSpan value={summary.totalIntDiff} /> : null}
+                </span>
+              </div>
+            </div>
+
+            <PaymentChart
+              schedule={result.schedule}
+              compareSchedule={compareResult?.schedule}
+              labelPrimary={repaymentTypeLabels[repaymentType]}
+              labelCompare={compareType ? repaymentTypeLabels[compareType as RepaymentType] : "비교"}
+            />
+
+            <div className="text-muted-foreground space-y-2 text-xs leading-relaxed">
+              {compareResult ? (
+                <p>
+                  파란색 실선은 선택한 상환 방식, 주황색 점선은 비교 방식의 월상환액입니다. 빨간색 괄호는 더 많이 상환(불리), 초록색은 더 적게
+                  상환(유리)을 뜻합니다.
+                </p>
+              ) : (
+                <p>
+                  월상환액은 상환원금과 이자의 합입니다. 원리금균등상환은 월상환액이 일정하고, 원금균등상환은 초기에 높고 점차 줄어듭니다.
+                </p>
+              )}
+              {!result.schedule.length ? (
+                <p>아직 계산 전입니다. 입력값을 채우고 계산하기를 누르면 결과와 차트가 갱신됩니다.</p>
+              ) : null}
+            </div>
+          </>
         </CardContent>
       </Card>
 
-      {result ? (
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg">상환 일정표</CardTitle>
-            <ScheduleDownloadButtons data={exportData} />
-          </CardHeader>
-          <CardContent>
-            <div
-              className="max-h-[min(25.5rem,55vh)] overflow-auto rounded-md border"
-              role="region"
-              aria-label="상환 일정표. 약 10회차까지 보이며 나머지는 세로 스크롤로 확인할 수 있습니다."
-            >
-              <table className="w-full min-w-[520px] border-collapse text-sm" role="table" aria-label="상환 일정표">
-                <thead className="bg-card sticky top-0 z-[1] shadow-[0_1px_0_0_var(--border)]">
-                  <tr className="bg-muted/50 border-b">
-                    <th scope="col" className="bg-muted/50 p-2 text-left font-medium backdrop-blur-sm">
-                      회차
-                    </th>
-                    <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
-                      상환원금
-                    </th>
-                    <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
-                      이자
-                    </th>
-                    <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
-                      월상환액
-                    </th>
-                    <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
-                      잔액
-                    </th>
+      <Card className="lg:col-span-2">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-lg">상환 일정표</CardTitle>
+          <ScheduleDownloadButtons data={exportData} />
+        </CardHeader>
+        <CardContent>
+          <div
+            className="max-h-[min(25.5rem,55vh)] overflow-auto rounded-md border"
+            role="region"
+            aria-label="상환 일정표. 약 10회차까지 보이며 나머지는 세로 스크롤로 확인할 수 있습니다."
+          >
+            <table className="w-full min-w-[520px] border-collapse text-sm" role="table" aria-label="상환 일정표">
+              <thead className="bg-card sticky top-0 z-[1] shadow-[0_1px_0_0_var(--border)]">
+                <tr className="bg-muted/50 border-b">
+                  <th scope="col" className="bg-muted/50 p-2 text-left font-medium backdrop-blur-sm">
+                    회차
+                  </th>
+                  <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
+                    상환원금
+                  </th>
+                  <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
+                    이자
+                  </th>
+                  <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
+                    월상환액
+                  </th>
+                  <th scope="col" className="bg-muted/50 p-2 text-right font-medium backdrop-blur-sm">
+                    잔액
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.schedule.map((row) => (
+                  <tr
+                    key={row.month}
+                    className="border-b transition-colors duration-150 ease-out odd:bg-background even:bg-muted/30 hover:bg-primary/10 dark:hover:bg-primary/20"
+                  >
+                    <td className="p-2">{row.month}회</td>
+                    <td className="p-2 text-right tabular-nums">{formatNumber(row.principal)}원</td>
+                    <td className="p-2 text-right tabular-nums">{formatNumber(row.interest)}원</td>
+                    <td className="p-2 text-right tabular-nums">{formatNumber(row.payment)}원</td>
+                    <td className="p-2 text-right tabular-nums">{formatNumber(row.balance)}원</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {result.schedule.map((row) => (
-                    <tr
-                      key={row.month}
-                      className="border-b transition-colors duration-150 ease-out odd:bg-background even:bg-muted/30 hover:bg-primary/10 dark:hover:bg-primary/20"
-                    >
-                      <td className="p-2">{row.month}회</td>
-                      <td className="p-2 text-right tabular-nums">{formatNumber(row.principal)}원</td>
-                      <td className="p-2 text-right tabular-nums">{formatNumber(row.interest)}원</td>
-                      <td className="p-2 text-right tabular-nums">{formatNumber(row.payment)}원</td>
-                      <td className="p-2 text-right tabular-nums">{formatNumber(row.balance)}원</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
+                ))}
+                {!result.schedule.length ? (
+                  <tr>
+                    <td colSpan={5} className="text-muted-foreground p-6 text-center text-sm">
+                      계산 전입니다. 결과는 계산하기 버튼을 누르면 표시됩니다.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
