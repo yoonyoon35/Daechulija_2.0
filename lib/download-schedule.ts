@@ -1,5 +1,17 @@
 import type { RepaymentType, ScheduleRow } from "@/lib/loan-calculations";
 import { formatNumber, repaymentTypeLabels } from "@/lib/loan-calculations";
+import {
+  AlignmentType,
+  Document,
+  Packer,
+  Paragraph,
+  Table,
+  TableCell,
+  TableLayoutType,
+  TableRow,
+  TextRun,
+  WidthType,
+} from "docx";
 
 export interface ScheduleExportData {
   schedule: ScheduleRow[];
@@ -74,39 +86,82 @@ export function downloadExcel(data: ScheduleExportData) {
   downloadBlob(blob, `대출상환일정표_${Date.now()}.xls`);
 }
 
-export function downloadWord(data: ScheduleExportData) {
+export async function downloadWord(data: ScheduleExportData) {
   const name = repaymentTypeLabels[data.repaymentType];
-  let html = "<!DOCTYPE html>\n";
-  html +=
-    '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">\n';
-  html += "<head>\n";
-  html += '<meta charset="UTF-8">\n';
-  html += '<meta name="ProgId" content="Word.Document">\n';
-  html += '<style>\n';
-  html +=
-    'body { font-family: "맑은 고딕", "Malgun Gothic", "Noto Sans KR", sans-serif; font-size: 11pt; }\n';
-  html += "table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10pt; }\n";
-  html += "th, td { border: 1px solid #333; padding: 6px; text-align: left; }\n";
-  html += "th { background-color: #f3f4f6; font-weight: bold; }\n";
-  html += "</style>\n";
-  html += "</head>\n<body>\n";
-  html += "<h1>대출 이자 계산 결과</h1>\n";
-  html += `<p><strong>대출 원금:</strong> ${formatNumber(data.principal)}원</p>\n`;
-  html += `<p><strong>이자율:</strong> ${data.interestRate}%</p>\n`;
-  html += `<p><strong>대출 기간:</strong> ${data.loanPeriod}개월</p>\n`;
-  html += `<p><strong>거치기간:</strong> ${data.gracePeriod}년</p>\n`;
-  html += `<p><strong>상환 방식:</strong> ${name}</p>\n`;
-  html += `<p><strong>월 상환액:</strong> ${formatNumber(data.monthlyPayment)}원</p>\n`;
-  html += `<p><strong>총 상환액:</strong> ${formatNumber(data.totalPayment)}원</p>\n`;
-  html += `<p><strong>총 이자액:</strong> ${formatNumber(data.totalInterest)}원</p>\n`;
-  html += "<h2>상환 일정표</h2>\n<table>\n<thead><tr><th>회차</th><th>상환원금</th><th>이자</th><th>월상환액</th><th>잔액</th></tr></thead>\n<tbody>\n";
-  data.schedule.forEach((item) => {
-    html += `<tr><td>${item.month}</td><td>${formatNumber(item.principal)}원</td><td>${formatNumber(item.interest)}원</td><td>${formatNumber(item.payment)}원</td><td>${formatNumber(item.balance)}원</td></tr>\n`;
-  });
-  html += "</tbody>\n</table>\n</body>\n</html>";
+  const columnWidths = [900, 2400, 1900, 2400, 2400];
 
-  const blob = new Blob(["\ufeff" + html], { type: "application/msword" });
-  downloadBlob(blob, `대출상환일정표_${Date.now()}.doc`);
+  const createCell = (
+    value: string,
+    width: number,
+    align: (typeof AlignmentType)[keyof typeof AlignmentType],
+    bold = false,
+  ) =>
+    new TableCell({
+      width: { size: width, type: WidthType.DXA },
+      children: [
+        new Paragraph({
+          alignment: align,
+          children: [new TextRun({ text: value, bold })],
+        }),
+      ],
+    });
+
+  const infoLines = [
+    `대출 원금: ${formatNumber(data.principal)}원`,
+    `이자율: ${data.interestRate}%`,
+    `대출 기간: ${data.loanPeriod}개월`,
+    `거치기간: ${data.gracePeriod}년`,
+    `상환 방식: ${name}`,
+    `월 상환액: ${formatNumber(data.monthlyPayment)}원`,
+    `총 상환액: ${formatNumber(data.totalPayment)}원`,
+    `총 이자액: ${formatNumber(data.totalInterest)}원`,
+  ];
+
+  const headerRow = new TableRow({
+    children: ["회차", "상환원금", "이자", "월상환액", "잔액"].map((label, index) =>
+      createCell(label, columnWidths[index], AlignmentType.CENTER, true),
+    ),
+  });
+
+  const scheduleRows = data.schedule.map(
+    (item) =>
+      new TableRow({
+        children: [
+          createCell(String(item.month), columnWidths[0], AlignmentType.CENTER),
+          createCell(`${formatNumber(item.principal)}원`, columnWidths[1], AlignmentType.RIGHT),
+          createCell(`${formatNumber(item.interest)}원`, columnWidths[2], AlignmentType.RIGHT),
+          createCell(`${formatNumber(item.payment)}원`, columnWidths[3], AlignmentType.RIGHT),
+          createCell(`${formatNumber(item.balance)}원`, columnWidths[4], AlignmentType.RIGHT),
+        ],
+      }),
+  );
+
+  const doc = new Document({
+    sections: [
+      {
+        children: [
+          new Paragraph({ children: [new TextRun({ text: "대출 이자 계산 결과", bold: true, size: 32 })] }),
+          ...infoLines.map((line) => new Paragraph(line)),
+          new Paragraph(""),
+          new Paragraph({ children: [new TextRun({ text: "상환 일정표", bold: true, size: 28 })] }),
+          new Table({
+            rows: [headerRow, ...scheduleRows],
+            layout: TableLayoutType.FIXED,
+            width: { size: 5000, type: WidthType.PERCENTAGE },
+            columnWidths,
+          }),
+        ],
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  downloadBlob(
+    new Blob([blob], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }),
+    `대출상환일정표_${Date.now()}.docx`,
+  );
 }
 
 export function downloadPdfPrint(data: ScheduleExportData) {
@@ -122,6 +177,9 @@ export function downloadPdfPrint(data: ScheduleExportData) {
       table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
       th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
       th { background: #f3f4f6; }
+      th { text-align: center; }
+      td:first-child { text-align: center; }
+      td:not(:first-child) { text-align: right; }
       @media print { button { display: none; } }
     </style></head><body>
     <h1>대출 이자 계산 결과</h1>
