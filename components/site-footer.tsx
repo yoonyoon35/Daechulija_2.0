@@ -15,6 +15,9 @@ export function SiteFooter() {
           <Link href="/terms" className="hover:text-foreground underline-offset-4 hover:underline">
             이용약관
           </Link>
+          <Link href="/oss-notice" className="hover:text-foreground underline-offset-4 hover:underline">
+            오픈소스 고지
+          </Link>
         </div>
         <p>© {new Date().getFullYear()} daechulija.com. All rights reserved.</p>
         <p className="text-xs">{referenceDisclaimerLine}</p>

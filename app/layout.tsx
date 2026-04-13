@@ -63,7 +63,11 @@ export const metadata: Metadata = {
     images: [ogImagePath],
   },
   icons: {
-    icon: "/favicon/favicon.ico",
+    icon: [
+      { url: "/favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon/favicon.ico" },
+    ],
+    shortcut: "/favicon/favicon.ico",
     apple: "/favicon/apple-touch-icon.png",
   },
 };

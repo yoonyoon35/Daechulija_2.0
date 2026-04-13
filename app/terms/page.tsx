@@ -48,6 +48,17 @@ export default function TermsPage() {
         <h2 className="text-lg font-semibold">제6조 (분쟁)</h2>
         <p>분쟁 발생 시 대한민국 법을 적용하며, 관할은 관련 법령 및 상관례에 따릅니다.</p>
       </section>
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">제7조 (오픈소스 및 제3자 리소스 고지)</h2>
+        <p>
+          본 서비스는 Next.js, React 등 오픈소스 소프트웨어를 활용하여 제공됩니다. 각 구성요소의 라이선스는 해당 프로젝트의 원문
+          라이선스 정책을 따릅니다.
+        </p>
+        <p>
+          상세 목록은 프로젝트의 <code className="bg-muted rounded px-1 py-0.5 text-xs">THIRD_PARTY_NOTICES.md</code> 문서에
+          정리되어 있으며, 카카오톡 공유 버튼 이미지는 카카오 디벨로퍼스 제공 리소스를 사용합니다.
+        </p>
+      </section>
       <p className="text-muted-foreground text-xs">
         전문은 사이트 운영 정책에 따라 업데이트될 수 있습니다. 상세 문구는 기존 사이트의 이용약관을 기준으로 하되, 배포 전 법률 검토를 권장합니다.
       </p>
