@@ -5,6 +5,14 @@ import { SITE_URL } from "@/lib/site";
 
 const pageTitle = "대출·금융 가이드";
 
+function parseKoreanDate(value: string): number {
+  const match = value.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+  if (!match) return 0;
+
+  const [, year, month, day] = match;
+  return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const description =
     "DSR, 주택담보대출 한도 등 대출·금융을 이해하는 데 도움이 되는 참고 글을 모았습니다. 실제 조건은 금융기관에 문의하세요.";
@@ -21,6 +29,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function GuideIndexPage() {
+  const sortedGuideArticles = [...guideArticles]
+    .map((article, index) => ({ article, index }))
+    .sort((a, b) => {
+      const dateDiff = parseKoreanDate(b.article.updated) - parseKoreanDate(a.article.updated);
+      if (dateDiff !== 0) return dateDiff;
+      return b.index - a.index;
+    })
+    .map(({ article }) => article);
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14" role="main">
       <nav className="text-muted-foreground mb-8 text-sm" aria-label="이동 경로">
@@ -41,7 +58,7 @@ export default function GuideIndexPage() {
         </p>
       </header>
       <ul className="mt-10 space-y-6">
-        {guideArticles.map((article) => (
+        {sortedGuideArticles.map((article) => (
           <li key={article.slug}>
             <article className="rounded-lg border border-border p-4 sm:p-5">
               <h2 className="text-lg font-semibold tracking-tight">

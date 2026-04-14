@@ -12,6 +12,26 @@ import {
 } from "@/lib/guide/articles/equal-payment-vs-equal-principal";
 import { PrepaymentFeeCalculationBody, prepaymentFeeCalculationMeta } from "@/lib/guide/articles/prepayment-fee-calculation";
 import { VariableVsFixedRate2026Body, variableVsFixedRate2026Meta } from "@/lib/guide/articles/variable-vs-fixed-rate-2026";
+import {
+  AnnualSalaryMortgageLimitDsrBody,
+  annualSalaryMortgageLimitDsrMeta,
+} from "@/lib/guide/articles/annual-salary-mortgage-limit-dsr";
+import { LtvDtiDsrComparisonBody, ltvDtiDsrComparisonMeta } from "@/lib/guide/articles/ltv-dti-dsr-comparison";
+import { StressDsrExplainedBody, stressDsrExplainedMeta } from "@/lib/guide/articles/stress-dsr-explained";
+import { DsrCalculationMethodBody, dsrCalculationMethodMeta } from "@/lib/guide/articles/dsr-calculation-method";
+import { JeonseLoanTypesComparisonBody, jeonseLoanTypesComparisonMeta } from "@/lib/guide/articles/jeonse-loan-types-comparison";
+import { RateReductionRequestRightBody, rateReductionRequestRightMeta } from "@/lib/guide/articles/rate-reduction-request-right";
+import { CreditLoanVsMortgageLoanBody, creditLoanVsMortgageLoanMeta } from "@/lib/guide/articles/credit-loan-vs-mortgage-loan";
+import {
+  MortgageLoanApplicationDocumentsBody,
+  mortgageLoanApplicationDocumentsMeta,
+} from "@/lib/guide/articles/mortgage-loan-application-documents";
+import { GracePeriodExplainedBody, gracePeriodExplainedMeta } from "@/lib/guide/articles/grace-period-explained";
+import { LoanRefinancingGuideBody, loanRefinancingGuideMeta } from "@/lib/guide/articles/loan-refinancing-guide";
+import {
+  CreditScoreLoanRateGuideBody,
+  creditScoreLoanRateGuideMeta,
+} from "@/lib/guide/articles/credit-score-loan-rate-guide";
 
 export type GuideArticle = {
   slug: string;
@@ -53,6 +73,50 @@ export const guideArticles: readonly GuideArticle[] = [
   {
     ...variableVsFixedRate2026Meta,
     Body: VariableVsFixedRate2026Body,
+  },
+  {
+    ...annualSalaryMortgageLimitDsrMeta,
+    Body: AnnualSalaryMortgageLimitDsrBody,
+  },
+  {
+    ...ltvDtiDsrComparisonMeta,
+    Body: LtvDtiDsrComparisonBody,
+  },
+  {
+    ...stressDsrExplainedMeta,
+    Body: StressDsrExplainedBody,
+  },
+  {
+    ...dsrCalculationMethodMeta,
+    Body: DsrCalculationMethodBody,
+  },
+  {
+    ...jeonseLoanTypesComparisonMeta,
+    Body: JeonseLoanTypesComparisonBody,
+  },
+  {
+    ...rateReductionRequestRightMeta,
+    Body: RateReductionRequestRightBody,
+  },
+  {
+    ...creditLoanVsMortgageLoanMeta,
+    Body: CreditLoanVsMortgageLoanBody,
+  },
+  {
+    ...mortgageLoanApplicationDocumentsMeta,
+    Body: MortgageLoanApplicationDocumentsBody,
+  },
+  {
+    ...gracePeriodExplainedMeta,
+    Body: GracePeriodExplainedBody,
+  },
+  {
+    ...loanRefinancingGuideMeta,
+    Body: LoanRefinancingGuideBody,
+  },
+  {
+    ...creditScoreLoanRateGuideMeta,
+    Body: CreditScoreLoanRateGuideBody,
   },
 ];
 
