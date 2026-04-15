@@ -104,3 +104,4 @@
 
 1334 - ads.txt 파일 추가.
        yandex_b9d7eec2f6c0396f.html 파일 추가.
+       애드센스 재검토 요청 함.
