@@ -32,6 +32,30 @@ import {
   CreditScoreLoanRateGuideBody,
   creditScoreLoanRateGuideMeta,
 } from "@/lib/guide/articles/credit-score-loan-rate-guide";
+import {
+  HousingSubscriptionSavingsGuideBody,
+  housingSubscriptionSavingsGuideMeta,
+} from "@/lib/guide/articles/housing-subscription-savings-guide";
+import {
+  JeonseGuaranteeInsuranceGuideBody,
+  jeonseGuaranteeInsuranceGuideMeta,
+} from "@/lib/guide/articles/jeonse-guarantee-insurance-guide";
+import {
+  MultiHomeownerLoanRegulationsGuideBody,
+  multiHomeownerLoanRegulationsGuideMeta,
+} from "@/lib/guide/articles/multi-homeowner-loan-regulations-guide";
+import {
+  IncomeTypeLoanLimitDifferenceGuideBody,
+  incomeTypeLoanLimitDifferenceGuideMeta,
+} from "@/lib/guide/articles/income-type-loan-limit-difference-guide";
+import {
+  MortgageMaturityExtensionGuideBody,
+  mortgageMaturityExtensionGuideMeta,
+} from "@/lib/guide/articles/mortgage-maturity-extension-guide";
+import {
+  HomePurchaseAdditionalCostsGuideBody,
+  homePurchaseAdditionalCostsGuideMeta,
+} from "@/lib/guide/articles/home-purchase-additional-costs-guide";
 
 export type GuideArticle = {
   slug: string;
@@ -117,6 +141,30 @@ export const guideArticles: readonly GuideArticle[] = [
   {
     ...creditScoreLoanRateGuideMeta,
     Body: CreditScoreLoanRateGuideBody,
+  },
+  {
+    ...housingSubscriptionSavingsGuideMeta,
+    Body: HousingSubscriptionSavingsGuideBody,
+  },
+  {
+    ...jeonseGuaranteeInsuranceGuideMeta,
+    Body: JeonseGuaranteeInsuranceGuideBody,
+  },
+  {
+    ...multiHomeownerLoanRegulationsGuideMeta,
+    Body: MultiHomeownerLoanRegulationsGuideBody,
+  },
+  {
+    ...incomeTypeLoanLimitDifferenceGuideMeta,
+    Body: IncomeTypeLoanLimitDifferenceGuideBody,
+  },
+  {
+    ...mortgageMaturityExtensionGuideMeta,
+    Body: MortgageMaturityExtensionGuideBody,
+  },
+  {
+    ...homePurchaseAdditionalCostsGuideMeta,
+    Body: HomePurchaseAdditionalCostsGuideBody,
   },
 ];
 

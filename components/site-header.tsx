@@ -112,6 +112,9 @@ export function SiteHeader() {
             <Link className="hover:text-foreground rounded-md px-2 py-1" href="/guide">
               가이드
             </Link>
+            <Link className="hover:text-foreground rounded-md px-2 py-1" href="/acquisition-tax-calculator">
+              취득세계산기
+            </Link>
           </nav>
 
           <div className="flex flex-wrap items-center gap-1 border-l pl-2" role="group" aria-label="SNS 공유">
