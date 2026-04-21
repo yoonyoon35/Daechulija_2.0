@@ -156,3 +156,5 @@
               경상남도 : https://gis.gyeongnam.go.kr/srp/brokerageFee.do
               경상북도 : https://www.gb.go.kr/Main/economy/page.do?mnu_uid=15370&LARGE_CODE=1070&MEDIUM_CODE=10&SMALL_CODE=30&SMALL_CODE2=10
               제주도 : https://www.jeju.go.kr/city/land/tariff.htm
+
+1210 - 얀덱스 인증코드 html 방식에서 meta tag 방식으로 변경(기존 방식이 인식이 계속 안됨)

@@ -36,6 +36,9 @@ export const metadata: Metadata = {
     "전세자금대출",
   ],
   authors: [{ name: "Daechulija.com" }],
+  verification: {
+    yandex: "b9d7eec2f6c0396f",
+  },
   robots: {
     index: true,
     follow: true,
