@@ -1,26 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AcquisitionTaxCalculatorSection } from "@/components/acquisition-tax-calculator-section";
+import { BrokerageFeeCalculatorSection } from "@/components/brokerage-fee-calculator-section";
 import { SITE_URL } from "@/lib/site";
 
-const pageTitle = "취득세 계산기";
+const pageTitle = "중개보수 계산기";
 const pageDescription =
-  "주택·주택 외·농지 등 자산 구분과 취득 유형에 따라 취득세·지방교육세·농어촌특별세를 계산합니다.";
+  "서울특별시 고시 부동산 중개보수 상한 요율에 따라 주택·오피스텔·기타 부동산의 법정 최대 중개보수를 계산합니다.";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: pageTitle,
     description: pageDescription,
-    alternates: { canonical: `${SITE_URL}/acquisition-tax-calculator` },
+    alternates: { canonical: `${SITE_URL}/brokerage-fee-calculator` },
     openGraph: {
-      url: `${SITE_URL}/acquisition-tax-calculator`,
+      url: `${SITE_URL}/brokerage-fee-calculator`,
       title: `${pageTitle} | Daechulija.com`,
       description: pageDescription,
     },
   };
 }
 
-export default function AcquisitionTaxCalculatorPage() {
+export default function BrokerageFeeCalculatorPage() {
   return (
     <main role="main">
       <section className="from-primary/10 via-background to-background border-b bg-gradient-to-b py-10 sm:py-14">
@@ -38,13 +38,13 @@ export default function AcquisitionTaxCalculatorPage() {
           </nav>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{pageTitle}</h1>
           <p className="text-muted-foreground mt-3 max-w-3xl text-sm leading-relaxed sm:text-base">
-            자산 구분(주택, 주택 외, 농지)과 취득 유형별 기준을 하단 기준표로 함께 제공합니다. 계산 결과는 참고용이며 실제 신고 세액은 관할
-            지자체 및 세무전문가 확인이 필요합니다.
+            서울시 고시 요율을 반영했습니다. 하단에 요율표와 적용기준을 함께 두었습니다. 계산 결과는 참고용이며, 실제 협의 금액·부가세·관할
+            고시는 개별 확인이 필요합니다.
           </p>
         </div>
       </section>
 
-      <AcquisitionTaxCalculatorSection />
+      <BrokerageFeeCalculatorSection />
     </main>
   );
 }

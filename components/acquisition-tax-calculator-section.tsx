@@ -14,7 +14,7 @@ export function AcquisitionTaxCalculatorSection() {
     <section className="scroll-mt-24 py-10 sm:py-14" aria-labelledby="acquisition-tax-calculator-heading">
       <div className="mx-auto max-w-6xl px-4">
         <h2 id="acquisition-tax-calculator-heading" className="mb-8 text-2xl font-bold tracking-tight sm:text-3xl">
-          주택 취득세 계산기
+          취득세 계산기
         </h2>
         <Suspense fallback={<CalculatorFallback />}>
           <AcquisitionTaxCalculator />

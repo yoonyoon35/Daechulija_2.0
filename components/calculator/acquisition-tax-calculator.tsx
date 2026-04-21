@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatAmountKoreanWon } from "@/lib/korean-amount";
 import { formatNumber, removeCommas } from "@/lib/loan-calculations";
 
 type HouseCount = "1" | "2" | "3" | "4+";
@@ -111,6 +112,30 @@ function getFarmlandRates(
 
 function toPercent(rate: number): string {
   return `${(rate * 100).toFixed(3).replace(/\.?0+$/, "")}%`;
+}
+
+function ResultAmountBlock({ amount, className }: { amount: number; className?: string }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className={className}>{formatNumber(amount)}원</span>
+      <span className="text-muted-foreground text-xs font-normal leading-relaxed" aria-label={`한글 금액 ${formatAmountKoreanWon(amount)}`}>
+        {formatAmountKoreanWon(amount)}
+      </span>
+    </div>
+  );
+}
+
+function ResultTaxWithRate({ amount, rate }: { amount: number; rate: number }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-lg font-semibold tabular-nums">
+        {formatNumber(amount)}원 ({toPercent(rate)})
+      </span>
+      <span className="text-muted-foreground text-xs font-normal leading-relaxed" aria-label={`한글 금액 ${formatAmountKoreanWon(amount)}`}>
+        {formatAmountKoreanWon(amount)}
+      </span>
+    </div>
+  );
 }
 
 export function AcquisitionTaxCalculator() {
@@ -407,29 +432,23 @@ export function AcquisitionTaxCalculator() {
             <div className="grid gap-3 sm:grid-cols-1" role="list">
               <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
                 <span className="text-muted-foreground text-sm">과세표준 (입력값 중 큰 금액)</span>
-                <span className="text-lg font-semibold tabular-nums">{formatNumber(result.taxableBase)}원</span>
+                <ResultAmountBlock amount={result.taxableBase} className="text-lg font-semibold tabular-nums" />
               </div>
               <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
                 <span className="text-muted-foreground text-sm">취득세</span>
-                <span className="text-lg font-semibold tabular-nums">
-                  {formatNumber(result.acquisitionTax)}원 ({toPercent(result.acquisitionTaxRate)})
-                </span>
+                <ResultTaxWithRate amount={result.acquisitionTax} rate={result.acquisitionTaxRate} />
               </div>
               <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
                 <span className="text-muted-foreground text-sm">지방교육세</span>
-                <span className="text-lg font-semibold tabular-nums">
-                  {formatNumber(result.localEducationTax)}원 ({toPercent(result.localEducationTaxRate)})
-                </span>
+                <ResultTaxWithRate amount={result.localEducationTax} rate={result.localEducationTaxRate} />
               </div>
               <div className="flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
                 <span className="text-muted-foreground text-sm">농어촌특별세</span>
-                <span className="text-lg font-semibold tabular-nums">
-                  {formatNumber(result.ruralSpecialTax)}원 ({toPercent(result.ruralSpecialTaxRate)})
-                </span>
+                <ResultTaxWithRate amount={result.ruralSpecialTax} rate={result.ruralSpecialTaxRate} />
               </div>
               <div className="bg-muted/40 flex flex-col gap-0.5 rounded-lg border p-3" role="listitem">
                 <span className="text-muted-foreground text-sm">총 예상 취득 부대세</span>
-                <span className="text-2xl font-bold tabular-nums">{formatNumber(result.totalTax)}원</span>
+                <ResultAmountBlock amount={result.totalTax} className="text-2xl font-bold tabular-nums" />
               </div>
             </div>
           ) : (
@@ -440,7 +459,7 @@ export function AcquisitionTaxCalculator() {
 
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle className="text-lg">주택 취득세 기준표</CardTitle>
+          <CardTitle className="text-lg">취득세 기준표</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm font-semibold">주택 매매 기준표</p>

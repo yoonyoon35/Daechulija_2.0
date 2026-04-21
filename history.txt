@@ -121,3 +121,38 @@
 2416 - 취득세 계산기 페이지 추가.
         - 생애최초 등 특례 계산 조건 기능은 아직 안하고, 가장 기본적인 취득세 관련 내용 적용
         - 해당 페이지에 대한 텍스트 컨텐츠 추가하면 좋을 듯.
+  
+--------------------------------------------------------------------------------------------------------------------
+
+260421
+
+1020 - 헤더에 계산기 항목 외 취득세 계산기 항목을 제거하고, 계산기 항목에 호버 효과로 드롭다운 표시를 해서 드롭다운 안에 
+       이자 계산기와 취득세 계산기를 추가해서 깔끔하게 하고, 앞으로 기능이 추가돼도 따로 자리 안 만들 수 있게 함.
+       홈 화면은 기존과 그대로 대출이자 계산기 페이지가 노출 됨.
+
+       최초 주택 취득세 계산기로 페이지 시작해서 자산 유형을 늘렸기 때문에 그냥 취득세 계산기 로 이름 정정
+
+       취득세 계산기 페이지 계산 결과 금액에 한글 내용 포함
+
+1112 - 중개보수 계산기 페이지 추가
+        - 지역별 공식 요율표 확인 섹션에서 전국 각각의 요율표를 확인 할 수 있게 링크를 연결함.
+        중개인협회나 비슷한 타 페이지들만 봐도 이 링크가 많이 깨져 있음.
+        종종 체크 해주면 좋을 듯.
+
+              서울시 : https://land.seoul.go.kr:444/land/broker/brokerageCommission.do
+              경기도 : https://www.gg.go.kr/bbs/boardView.do?bsIdx=656&bIdx=83794&menuId=2082
+              강원도 : https://state.gwd.go.kr/portal/partinfo/landHousing/realEstate/calculation
+              인천광역시 : https://www.incheon.go.kr/build/BU060102/274
+              세종시 : https://www.sejong.go.kr/bbs/R0071/view.do?nttId=B000000152318Nv9qS1u
+              대구광역시 : https://www.daegu.go.kr/build/index.do?menu_id=00001346
+              부산광역시 : https://www.busan.go.kr/depart/ahestateprice01-1
+              광주광역시 : https://www.gwangju.go.kr/build/contentsView.do?pageId=build25
+              대전광역시 : https://www.djjunggu.go.kr/kr/sub02_06_05_01.do
+              울산광역시 : https://www.ulsannamgu.go.kr/fieldInfo/realestateInfo03.jsp
+              충청북도 : https://www.chungbuk.go.kr/www/contents.do?key=4582
+              충청남도 : https://viewstory.net/external/resources/upload/chn/convert/2026/04/21/7a0359be-34ae-43f2-9839-12c08d09f6ce.jpg
+              전라북도 : https://www.jeonbuk.go.kr/board/SynapViewer.jeonbuk?boardId=BBS_0000037&menuCd=DOM_000000104002011000&paging=ok&startPage=1&dataSid=334939&command=update&fileSid=273380
+              전라남도 : https://www.jeonnam.go.kr/contentsView.do?menuId=jeonnam0505060000
+              경상남도 : https://gis.gyeongnam.go.kr/srp/brokerageFee.do
+              경상북도 : https://www.gb.go.kr/Main/economy/page.do?mnu_uid=15370&LARGE_CODE=1070&MEDIUM_CODE=10&SMALL_CODE=30&SMALL_CODE2=10
+              제주도 : https://www.jeju.go.kr/city/land/tariff.htm

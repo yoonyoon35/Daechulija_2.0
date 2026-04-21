@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
-import { Copy } from "lucide-react";
+import { ChevronDown, Copy } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { sendKakaoFeedShare } from "@/lib/kakao-share";
@@ -97,9 +97,48 @@ export function SiteHeader() {
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <nav className="text-muted-foreground flex flex-wrap items-center gap-1 text-sm" aria-label="주요 메뉴">
-            <Link className="hover:text-foreground rounded-md px-2 py-1" href="/#calculator">
-              계산기
-            </Link>
+            <div className="group relative">
+              <span
+                className="hover:text-foreground inline-flex cursor-default items-center gap-0.5 rounded-md px-2 py-1"
+                tabIndex={0}
+                role="button"
+                aria-haspopup="menu"
+                aria-expanded="false"
+                aria-label="계산기 메뉴"
+              >
+                계산기
+                <ChevronDown className="size-3.5 shrink-0 opacity-70 transition-transform duration-150 group-hover:rotate-180" aria-hidden />
+              </span>
+              <div
+                className="border-border bg-card text-foreground ring-border/40 pointer-events-none invisible absolute top-full left-0 z-50 min-w-[12.5rem] pt-1 opacity-0 shadow-lg ring-1 transition-[opacity,visibility] duration-150 group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100 focus-within:pointer-events-auto focus-within:visible focus-within:opacity-100"
+                role="menu"
+                aria-label="계산기 선택"
+              >
+                <div className="rounded-md border py-1">
+                  <Link
+                    role="menuitem"
+                    className="hover:bg-muted hover:text-foreground block px-3 py-2 text-sm"
+                    href="/#calculator"
+                  >
+                    대출 이자 계산기
+                  </Link>
+                  <Link
+                    role="menuitem"
+                    className="hover:bg-muted hover:text-foreground block px-3 py-2 text-sm"
+                    href="/acquisition-tax-calculator"
+                  >
+                    취득세 계산기
+                  </Link>
+                  <Link
+                    role="menuitem"
+                    className="hover:bg-muted hover:text-foreground block px-3 py-2 text-sm"
+                    href="/brokerage-fee-calculator"
+                  >
+                    중개보수 계산기
+                  </Link>
+                </div>
+              </div>
+            </div>
             <Link className="hover:text-foreground rounded-md px-2 py-1" href="/#guide">
               이용가이드
             </Link>
@@ -111,9 +150,6 @@ export function SiteHeader() {
             </Link>
             <Link className="hover:text-foreground rounded-md px-2 py-1" href="/guide">
               가이드
-            </Link>
-            <Link className="hover:text-foreground rounded-md px-2 py-1" href="/acquisition-tax-calculator">
-              취득세계산기
             </Link>
           </nav>
 

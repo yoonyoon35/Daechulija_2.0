@@ -9,6 +9,9 @@ export function SiteFooter() {
           <Link href="/acquisition-tax-calculator" className="hover:text-foreground underline-offset-4 hover:underline">
             취득세 계산기
           </Link>
+          <Link href="/brokerage-fee-calculator" className="hover:text-foreground underline-offset-4 hover:underline">
+            중개보수 계산기
+          </Link>
           <Link href="/guide" className="hover:text-foreground underline-offset-4 hover:underline">
             가이드
           </Link>
