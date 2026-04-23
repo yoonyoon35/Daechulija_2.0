@@ -56,6 +56,22 @@ import {
   HomePurchaseAdditionalCostsGuideBody,
   homePurchaseAdditionalCostsGuideMeta,
 } from "@/lib/guide/articles/home-purchase-additional-costs-guide";
+import {
+  AcquisitionTaxRates2026GuideBody,
+  acquisitionTaxRates2026GuideMeta,
+} from "@/lib/guide/articles/acquisition-tax-rates-2026-guide";
+import {
+  FirstHomeAcquisitionTaxAmountGuideBody,
+  firstHomeAcquisitionTaxAmountGuideMeta,
+} from "@/lib/guide/articles/first-home-acquisition-tax-amount-guide";
+import {
+  TemporaryTwoHomeAcquisitionTaxExceptionGuideBody,
+  temporaryTwoHomeAcquisitionTaxExceptionGuideMeta,
+} from "@/lib/guide/articles/temporary-two-home-acquisition-tax-exception-guide";
+import {
+  ApartmentVillaOfficetelAcquisitionTaxGuideBody,
+  apartmentVillaOfficetelAcquisitionTaxGuideMeta,
+} from "@/lib/guide/articles/apartment-villa-officetel-acquisition-tax-guide";
 
 export type GuideArticle = {
   slug: string;
@@ -165,6 +181,22 @@ export const guideArticles: readonly GuideArticle[] = [
   {
     ...homePurchaseAdditionalCostsGuideMeta,
     Body: HomePurchaseAdditionalCostsGuideBody,
+  },
+  {
+    ...acquisitionTaxRates2026GuideMeta,
+    Body: AcquisitionTaxRates2026GuideBody,
+  },
+  {
+    ...firstHomeAcquisitionTaxAmountGuideMeta,
+    Body: FirstHomeAcquisitionTaxAmountGuideBody,
+  },
+  {
+    ...temporaryTwoHomeAcquisitionTaxExceptionGuideMeta,
+    Body: TemporaryTwoHomeAcquisitionTaxExceptionGuideBody,
+  },
+  {
+    ...apartmentVillaOfficetelAcquisitionTaxGuideMeta,
+    Body: ApartmentVillaOfficetelAcquisitionTaxGuideBody,
   },
 ];
 

@@ -4,6 +4,7 @@ import { guideArticles } from "@/lib/guide/registry";
 import { SITE_URL } from "@/lib/site";
 
 const pageTitle = "대출·금융 가이드";
+const ITEMS_PER_PAGE = 4;
 
 function parseKoreanDate(value: string): number {
   const match = value.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
@@ -28,7 +29,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function GuideIndexPage() {
+function parsePage(value: string | undefined): number {
+  if (!value) return 1;
+  const page = Number(value);
+  if (!Number.isInteger(page) || page < 1) return 1;
+  return page;
+}
+
+function buildGuidePageHref(page: number): string {
+  return page === 1 ? "/guide" : `/guide?page=${page}`;
+}
+
+export default function GuideIndexPage({
+  searchParams,
+}: {
+  searchParams?: { page?: string };
+}) {
   const sortedGuideArticles = [...guideArticles]
     .map((article, index) => ({ article, index }))
     .sort((a, b) => {
@@ -37,6 +53,11 @@ export default function GuideIndexPage() {
       return b.index - a.index;
     })
     .map(({ article }) => article);
+
+  const totalPages = Math.max(1, Math.ceil(sortedGuideArticles.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(parsePage(searchParams?.page), totalPages);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedGuideArticles = sortedGuideArticles.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14" role="main">
@@ -58,7 +79,7 @@ export default function GuideIndexPage() {
         </p>
       </header>
       <ul className="mt-10 space-y-6">
-        {sortedGuideArticles.map((article) => (
+        {paginatedGuideArticles.map((article) => (
           <li key={article.slug}>
             <article className="rounded-lg border border-border p-4 sm:p-5">
               <h2 className="text-lg font-semibold tracking-tight">
@@ -75,6 +96,40 @@ export default function GuideIndexPage() {
           </li>
         ))}
       </ul>
+      {totalPages > 1 ? (
+        <nav className="mt-8 flex items-center justify-center gap-2" aria-label="가이드 목록 페이지 이동">
+          <Link
+            href={buildGuidePageHref(Math.max(currentPage - 1, 1))}
+            className={`rounded border px-3 py-1 text-sm ${
+              currentPage === 1 ? "pointer-events-none opacity-50" : "hover:bg-muted"
+            }`}
+            aria-disabled={currentPage === 1}
+          >
+            이전
+          </Link>
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+            <Link
+              key={page}
+              href={buildGuidePageHref(page)}
+              className={`rounded border px-3 py-1 text-sm ${
+                page === currentPage ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"
+              }`}
+              aria-current={page === currentPage ? "page" : undefined}
+            >
+              {page}
+            </Link>
+          ))}
+          <Link
+            href={buildGuidePageHref(Math.min(currentPage + 1, totalPages))}
+            className={`rounded border px-3 py-1 text-sm ${
+              currentPage === totalPages ? "pointer-events-none opacity-50" : "hover:bg-muted"
+            }`}
+            aria-disabled={currentPage === totalPages}
+          >
+            다음
+          </Link>
+        </nav>
+      ) : null}
     </main>
   );
 }
