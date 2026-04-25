@@ -29,23 +29,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function parsePage(value: string | undefined): number {
-  if (!value) return 1;
-  const page = Number(value);
-  if (!Number.isInteger(page) || page < 1) return 1;
-  return page;
-}
-
 function buildGuidePageHref(page: number): string {
-  return page === 1 ? "/guide" : `/guide?page=${page}`;
+  return page === 1 ? "/guide" : `/guide/page/${page}`;
 }
 
-export default function GuideIndexPage({
-  searchParams,
-}: {
-  searchParams?: { page?: string };
-}) {
-  const sortedGuideArticles = [...guideArticles]
+function getSortedGuideArticles() {
+  return [...guideArticles]
     .map((article, index) => ({ article, index }))
     .sort((a, b) => {
       const dateDiff = parseKoreanDate(b.article.updated) - parseKoreanDate(a.article.updated);
@@ -53,9 +42,16 @@ export default function GuideIndexPage({
       return b.index - a.index;
     })
     .map(({ article }) => article);
+}
 
-  const totalPages = Math.max(1, Math.ceil(sortedGuideArticles.length / ITEMS_PER_PAGE));
-  const currentPage = Math.min(parsePage(searchParams?.page), totalPages);
+export function getGuideTotalPages(): number {
+  return Math.max(1, Math.ceil(getSortedGuideArticles().length / ITEMS_PER_PAGE));
+}
+
+export function GuideIndexContent({ initialPage }: { initialPage: number }) {
+  const sortedGuideArticles = getSortedGuideArticles();
+  const totalPages = getGuideTotalPages();
+  const currentPage = Math.min(Math.max(initialPage, 1), totalPages);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedGuideArticles = sortedGuideArticles.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
@@ -132,4 +128,8 @@ export default function GuideIndexPage({
       ) : null}
     </main>
   );
+}
+
+export default function GuideIndexPage() {
+  return <GuideIndexContent initialPage={1} />;
 }
