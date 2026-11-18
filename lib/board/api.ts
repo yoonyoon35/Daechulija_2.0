@@ -31,7 +31,12 @@ export type BoardPostInput = {
   title: string;
   author: string;
   content: string;
+  files?: File[];
 };
+
+export function boardFileUrl(postId: string, fileId: string) {
+  return new URL(`/posts/${postId}/files/${fileId}`, boardApiOrigin).toString();
+}
 
 export function fetchBoardPosts(params: { category: "all" | BoardCategory; query: string; page: number }, signal?: AbortSignal) {
   const url = new URL("/posts", boardApiOrigin);
@@ -46,10 +51,15 @@ export function fetchBoardPost(id: string, signal?: AbortSignal) {
 }
 
 export function createBoardPost(input: BoardPostInput) {
+  const form = new FormData();
+  form.set("category", input.category);
+  form.set("title", input.title);
+  form.set("author", input.author);
+  form.set("content", input.content);
+  for (const file of input.files ?? []) form.append("file", file);
   return requestJson<BoardPostDetail>(new URL("/posts", boardApiOrigin), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    body: form,
   });
 }
 

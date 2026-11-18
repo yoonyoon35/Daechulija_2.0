@@ -4,7 +4,7 @@ import { BoardWriteForm } from "@/components/board/board-write-form";
 import { SITE_URL } from "@/lib/site";
 
 const pageTitle = "글쓰기";
-const description = "게시판에 올릴 제목과 내용을 입력합니다. 첨부파일은 파일 저장소를 연결한 뒤에 등록할 수 있습니다.";
+const description = "게시판에 올릴 제목, 내용, 첨부파일을 입력합니다.";
 
 export const metadata: Metadata = {
   title: pageTitle,

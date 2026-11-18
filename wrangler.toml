@@ -9,3 +9,7 @@ preview_urls = false
 binding = "DB"
 database_name = "daechulija"
 database_id = "c334373a-68b4-4572-8f49-a658f5d370c2"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "daechulija-board"

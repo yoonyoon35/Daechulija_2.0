@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Paperclip } from "lucide-react";
 import { BoardBreadcrumb } from "@/components/board/board-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
-import { fetchBoardPost, type BoardPostDetail } from "@/lib/board/api";
+import { boardFileUrl, fetchBoardPost, type BoardPostDetail } from "@/lib/board/api";
 import { boardCategoryLabel, formatBoardDate, formatFileSize } from "@/lib/board/types";
 import { cn } from "@/lib/utils";
 
@@ -57,19 +57,20 @@ export function BoardDetail({ id }: { id: string | null }) {
                 <h2 className="text-sm font-semibold">첨부파일 {post.attachments.length}</h2>
                 <ul className="mt-3 space-y-2">
                   {post.attachments.map((file) => (
-                    <li
-                      key={file.id}
-                      className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
+                  <li key={file.id}>
+                    <a
+                      href={boardFileUrl(post.id, file.id)}
+                      className="hover:bg-muted flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
                     >
                       <span className="flex min-w-0 items-center gap-2">
                         <Paperclip className="text-muted-foreground size-4 shrink-0" aria-hidden />
                         <span className="truncate">{file.fileName}</span>
                       </span>
                       <span className="text-muted-foreground shrink-0 text-xs">{formatFileSize(file.size)}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-muted-foreground mt-3 text-xs">파일 받기는 저장소를 연결한 뒤에 사용할 수 있습니다.</p>
+                    </a>
+                  </li>
+                ))}
+              </ul>
               </section>
             ) : null}
           </article>

@@ -76,10 +76,6 @@ export function BoardWriteForm() {
     else if (trimmedContent.length > boardLimits.content) {
       nextErrors.content = `내용은 ${boardLimits.content}자 이하로 입력해 주세요.`;
     }
-    if (files.length > 0) {
-      nextErrors.files = "첨부파일은 아직 저장되지 않습니다. 파일을 제거한 뒤 글을 등록해 주세요.";
-    }
-
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0 || pending) {
       setStatus(null);
@@ -93,6 +89,7 @@ export function BoardWriteForm() {
       title: trimmedTitle,
       author: trimmedAuthor,
       content: trimmedContent,
+      files,
     })
       .then((created) => {
         router.push(`/board/post?id=${created.id}`);
@@ -178,8 +175,7 @@ export function BoardWriteForm() {
           className="h-10 py-1.5"
         />
         <p className="text-muted-foreground text-xs">
-          {boardLimits.files}개까지, 파일당 {formatFileSize(boardLimits.fileBytes)} 이하. 선택한 파일은 이 화면에만
-          남아 있고 올라가지 않습니다.
+          {boardLimits.files}개까지, 파일당 {formatFileSize(boardLimits.fileBytes)} 이하. 글과 함께 저장됩니다.
         </p>
         {errors.files ? <p className="text-destructive text-sm">{errors.files}</p> : null}
         {files.length > 0 ? (
