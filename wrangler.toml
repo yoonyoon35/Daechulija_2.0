@@ -1,0 +1,11 @@
+name = "daechulija-board"
+main = "worker/index.ts"
+account_id = "1b09b9cbcd20b448408886a73c2b6935"
+compatibility_date = "2026-11-18"
+workers_dev = true
+preview_urls = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "daechulija"
+database_id = "c334373a-68b4-4572-8f49-a658f5d370c2"

@@ -21,6 +21,9 @@ export function SiteFooter() {
           <Link href="/guide" className="hover:text-foreground underline-offset-4 hover:underline">
             가이드
           </Link>
+          <Link href="/board" className="hover:text-foreground underline-offset-4 hover:underline">
+            게시판
+          </Link>
           <Link href="/about" className="hover:text-foreground underline-offset-4 hover:underline">
             사이트 소개
           </Link>
