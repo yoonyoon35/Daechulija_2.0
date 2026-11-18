@@ -461,3 +461,175 @@
         > 취득세율 8% 미만 취득세×10%, 8% 이상 과세표준×0.4% (취득세 계산기와 동일)
 
         아직 push 안함
+
+--------------------------------------------------------------------------------------------------------------------
+
+261118
+
+2201 - 게시판 기능 검증. 광고 있는 withustools.com 대신, 광고 없는 daechulija.com에서
+       글·파일을 저장해 보고 고객 사이트에도 같은 방식으로 넣을 수 있는지 확인.
+       사이트는 output: "export" 정적 빌드라 페이지 파일만으로는 D1·R2에 접속하지 못한다.
+       글은 D1, 파일은 R2, 둘을 읽고 쓰는 프로그램은 같은 Cloudflare 계정의 Worker로 둔다.
+       고객에게 팔 때는 호스팅·D1·R2·Worker를 모두 그 고객 계정에 새로 만든다.
+
+       이 계정에서 만든 이름
+         - D1 데이터베이스 이름 daechulija
+           Database ID c334373a-68b4-4572-8f49-a658f5d370c2
+           위치 APAC
+         - Worker 이름 daechulija-board
+           주소 https://daechulija-board.dbsghkwns553.workers.dev
+         - R2 버킷 이름 daechulija-board
+           위치 힌트 APAC, Standard
+         - 계정 ID 1b09b9cbcd20b448408886a73c2b6935
+       고객 계정에서는 이름만 그 사이트에 맞게 바꾸고, ID는 만들 때 나온 값을 쓴다.
+
+       [1] D1 데이터베이스
+         1. Cloudflare 대시보드 → D1 → Create Database
+         2. 이름 입력. 위치 선택이 있으면 APAC
+         3. 만든 뒤 Overview에 나오는 Database ID를 복사 버튼으로 복사한다.
+            화면의 Select regions는 통계 필터이고 ID가 아니다.
+         4. 프로젝트에 wrangler가 없어도 된다. 아래는 받을 필요가 있는 명령만 그때그때 실행한다.
+              npx wrangler login
+            브라우저에서 그 고객 계정으로 허용한다.
+              npx wrangler whoami
+            로그인된 계정 이름이 맞는지 확인한다.
+         5. 프로젝트 루트 wrangler.toml
+              name = "워커이름"
+              main = "worker/index.ts"
+              account_id = "계정ID"
+              compatibility_date = "2026-11-18"
+              workers_dev = true
+              preview_urls = false
+
+              [[d1_databases]]
+              binding = "DB"
+              database_name = "데이터베이스이름"
+              database_id = "복사한 ID"
+         6. migrations/0001_board.sql
+            posts
+              id, category(notice|question|free), title(80자), author(20자),
+              content(5000자), created_at, view_count
+            attachments
+              id, post_id, file_name, content_type, size(10MB 이하),
+              object_key, created_at
+            post 삭제 시 attachment 행도 같이 지워지게 외래키를 건다.
+         7. 원격 데이터베이스에 테이블 적용
+              npx wrangler d1 migrations apply 데이터베이스이름 --remote
+            확인 질문이 나오면 yes.
+            적용 확인
+              npx wrangler d1 execute 데이터베이스이름 --remote --command "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name;"
+            posts, attachments, d1_migrations가 보이면 된다.
+
+       [2] Worker로 글 저장·조회
+         1. worker/index.ts
+            GET  /posts                         목록. category, q, page
+            POST /posts                         글 등록. JSON 또는 multipart
+            GET  /posts/:id                     본문. 조회수 1 증가
+            GET  /posts/:id/files/:fileId       파일 받기. R2 연결 후 사용
+            허용 출처는 고객 도메인, www, localhost:3000, localhost:3001
+            글 ID는 crypto.randomUUID()
+            검색어의 \, %, _는 LIKE에서 이스케이프
+         2. 정적 사이트는 없는 글 번호의 /board/글번호 파일을 만들 수 없다.
+            목록은 /board
+            글쓰기는 /board/write
+            본문은 /board/post?id=글번호
+            예시 글 파일 lib/board/posts.ts와 app/board/[id]는 제거했다.
+         3. 화면은 lib/board/api.ts의 boardApiOrigin으로 Worker를 호출한다.
+            이 저장소 값은 https://daechulija-board.dbsghkwns553.workers.dev
+            고객 사이트는 배포가 끝난 뒤 출력된 workers.dev 주소로 바꾼다.
+         4. 첫 배포
+              npx wrangler deploy
+            직전 명령에서 CI 환경변수를 켜 둔 상태면
+            "This Worker does not exist"로 실패할 수 있다.
+            PowerShell에서 아래를 실행한 뒤 다시 배포한다.
+              Remove-Item Env:CI -ErrorAction SilentlyContinue
+            성공하면 https://워커이름.서브도메인.workers.dev가 출력된다.
+         5. 동작 확인
+              목록 GET /posts 는 브라우저 User-Agent가 있는 요청으로 확인한다.
+              User-Agent가 없는 요청은 workers.dev가 404 안내 페이지를 줄 수 있다.
+            텍스트 글이 등록되고 목록에 보이면 D1 연결은 된 것이다.
+
+       [3] 예전에 쓰던 도메인이 새 도메인으로 301되는 경우
+         이 사이트는 daechulija.com 전체가 withustools.com으로 301이었다.
+         광고 없는 쪽에서 게시판만 검증하려고 /board는 301에서 뺐다.
+         고객 사이트가 처음부터 그 도메인으로 서비스되면 이 단계는 하지 않는다.
+
+         Cloudflare → 해당 사이트 → Rules → Redirect Rules → 기존 규칙
+         Custom filter expression이 이미 켜져 있으면 Edit expression.
+         식을 직접 고치면 버튼 문구가 Use expression builder로 바뀌고
+         When incoming requests match…가 보인다. 그게 정상이다. 빌더로 되돌리지 않는다.
+
+         게시판 주소만 빼면 화면은 열리지만 CSS·JS가 /_next로 301되어 글자만 남는다.
+         게시판이 쓰는 정적 파일 경로도 같이 뺀다. 이 사이트의 최종 식
+
+         ((http.host eq "daechulija.com") or (http.host eq "www.daechulija.com")) and not starts_with(http.request.uri.path, "/board") and not starts_with(http.request.uri.path, "/_next") and not starts_with(http.request.uri.path, "/favicon") and not starts_with(http.request.uri.path, "/kakao")
+
+         아래 URL redirect의 대상 주소와 301은 그대로 둔다.
+         저장 후 브라우저가 예전 301을 기억하면 계속 404로 보인다.
+         시크릿 창에서 https://도메인/board 를 연다.
+         게시판 주소는 그 도메인에 남아 있고, 홈은 계속 새 도메인으로 가면 된다.
+         화면 소스를 고친 뒤에는 정적 사이트를 다시 배포해야 실제 도메인에 반영된다.
+
+       [4] R2 파일 저장
+         1. Cloudflare 대시보드 → R2 Object Storage
+            Add R2 subscription to my account
+            오늘 결제 $0, 월 기본 요금 $0.
+            카드 등록은 필수다. 무료 한도를 넘긴 사용량만 나중에 청구된다.
+            무료 한도: 저장 10GB/월, Class A 100만 회/월, Class B 1,000만 회/월
+            약관과 카드 청구에 동의한 뒤 활성화한다.
+         2. 버킷 생성. 이 계정은 아래 명령으로 만들었다.
+              npx wrangler r2 bucket create daechulija-board --location apac
+            R2를 켜기 전에 실행하면
+            Please enable R2 through the Cloudflare Dashboard. [code: 10042]
+         3. wrangler.toml에 추가
+              [[r2_buckets]]
+              binding = "FILES"
+              bucket_name = "버킷이름"
+         4. Worker
+            글 등록은 multipart/form-data.
+            필드 category, title, author, content
+            파일 필드 이름 file. 최대 5개, 하나당 10MB, 빈 파일 거부
+            파일 본문은 R2 키 posts/글ID/파일ID
+            D1 attachments에는 파일 이름, 종류, 크기, object_key만 저장
+            HTML·SVG는 실행되지 않게 application/octet-stream으로 저장하고
+            받을 때는 Content-Disposition: attachment
+            파일 업로드 중 실패하면 그 글 행과 이미 올린 R2 객체를 지운다.
+         5. 다시 배포
+              npx wrangler deploy
+            출력에 env.DB와 env.FILES가 둘 다 보여야 한다.
+         6. 확인
+            작은 텍스트 파일을 multipart로 POST /posts
+            응답의 attachments에 파일 ID가 있는지 확인
+            GET /posts/글ID/files/파일ID 본문이 올린 내용과 같은지 확인
+            시험 글은 D1에서 지우고, R2 객체도 지운다.
+              npx wrangler d1 execute 데이터베이스이름 --remote --command "DELETE FROM posts WHERE id = '글ID';"
+              npx wrangler r2 object delete --remote -y "버킷이름/posts/글ID/파일ID"
+            객체 경로는 버킷이름/키를 한 덩어리로 넘긴다. 키만 따로 넘기면 인자 오류가 난다.
+         7. 화면
+            글쓰기에서 선택한 파일을 같이 전송한다.
+            글 보기의 파일 이름은 Worker의 파일 주소로 연결한다.
+            이 화면 수정은 사이트를 다시 배포해야 daechulija.com에 반영된다.
+            배포 후 글 작성, 첨부, 모바일 목록·본문, 파일 받기까지 확인했다.
+
+       판매 전에 아직 없는 기능
+         - 글 수정, 삭제
+         - 작성한 사람만 고칠 수 있는 확인
+         - 사이트 밖에서 API로 글을 마구 넣지 못하게 하는 제한
+       글과 파일을 D1·R2에 나누는 구조는 그대로 두고 위 세 가지만 보완하면 된다.
+
+       만든 파일
+         wrangler.toml
+         migrations/0001_board.sql
+         worker/index.ts
+         lib/board/types.ts
+         lib/board/api.ts
+         app/board/page.tsx
+         app/board/write/page.tsx
+         app/board/post/page.tsx
+         components/board/board-list.tsx
+         components/board/board-write-form.tsx
+         components/board/board-detail.tsx
+         components/board/board-post-loader.tsx
+         components/board/board-breadcrumb.tsx
+       메뉴에는 게시판 링크를 헤더와 푸터에 넣었다.
+       .gitignore에 .wrangler, .dev.vars를 추가했다.
