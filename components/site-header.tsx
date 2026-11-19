@@ -162,6 +162,9 @@ export function SiteHeader() {
             <Link className="hover:text-foreground rounded-md px-2 py-1" href="/board">
               게시판
             </Link>
+            <Link className="hover:text-foreground rounded-md px-2 py-1" href="/inquiry">
+              문의
+            </Link>
           </nav>
 
           <div className="flex flex-wrap items-center gap-1 border-l pl-2" role="group" aria-label="SNS 공유">

@@ -1,4 +1,5 @@
 import { boardCategories, boardLimits, boardPageSize, type BoardCategory } from "../lib/board/types";
+import { inquiryLimits, inquiryPageSize } from "../lib/inquiry/types";
 
 interface D1PreparedStatement {
   bind(...values: unknown[]): D1PreparedStatement;
@@ -45,6 +46,15 @@ type AttachmentRow = {
   size: number;
 };
 
+type InquiryRow = {
+  id: string;
+  name: string;
+  contact: string;
+  title: string;
+  content: string;
+  created_at: string;
+};
+
 const allowedOrigins = new Set([
   "https://daechulija.com",
   "https://www.daechulija.com",
@@ -88,11 +98,26 @@ const worker = {
         if (!post) return json({ message: "글을 찾을 수 없습니다." }, 404, cors);
         return json(post, 200, cors);
       }
+      if (url.pathname === "/inquiries" && request.method === "GET") {
+        return json(await listInquiries(env, url), 200, cors);
+      }
+      if (url.pathname === "/inquiries" && request.method === "POST") {
+        return json(await createInquiry(request, env), 201, cors);
+      }
+      const inquiry = url.pathname.match(/^\/inquiries\/([0-9a-f-]{36})$/i);
+      if (inquiry && request.method === "GET") {
+        const item = await readInquiry(env, inquiry[1]);
+        if (!item) return json({ message: "문의를 찾을 수 없습니다." }, 404, cors);
+        return json(item, 200, cors);
+      }
       return json({ message: "요청한 주소를 찾을 수 없습니다." }, 404, cors);
     } catch (error) {
       if (error instanceof HttpError) return json({ message: error.message }, error.status, cors);
       console.error(error);
-      return json({ message: "게시판을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요." }, 500, cors);
+      const message = url.pathname.startsWith("/inquiries")
+        ? "문의를 처리하지 못했습니다. 잠시 후 다시 시도해 주세요."
+        : "게시판을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+      return json({ message }, 500, cors);
     }
   },
 };
@@ -304,6 +329,99 @@ async function readFile(env: Env, postId: string, fileId: string) {
   const object = await env.FILES.get(row.object_key);
   if (!object) return null;
   return { body: object.body, fileName: row.file_name, contentType: safeContentType(row.content_type) };
+}
+
+async function listInquiries(env: Env, url: URL) {
+  const page = parsePage(url.searchParams.get("page"));
+  const totalRow = await env.DB.prepare("SELECT COUNT(*) AS count FROM inquiries").first<{ count: number }>();
+  const total = totalRow?.count ?? 0;
+  const rows = await env.DB.prepare(
+    `SELECT id, name, contact, title, '' AS content, created_at
+     FROM inquiries
+     ORDER BY created_at DESC
+     LIMIT ? OFFSET ?`,
+  )
+    .bind(inquiryPageSize, (page - 1) * inquiryPageSize)
+    .all<InquiryRow>();
+
+  return {
+    inquiries: rows.results.map((row) => toInquiry(row, false)),
+    total,
+    page,
+    pageSize: inquiryPageSize,
+  };
+}
+
+async function readInquiry(env: Env, id: string) {
+  const row = await env.DB.prepare(
+    "SELECT id, name, contact, title, content, created_at FROM inquiries WHERE id = ?",
+  )
+    .bind(id)
+    .first<InquiryRow>();
+  if (!row) return null;
+  return toInquiry(row, true);
+}
+
+async function createInquiry(request: Request, env: Env) {
+  const contentType = request.headers.get("Content-Type") ?? "";
+  const contentLength = Number(request.headers.get("Content-Length") ?? "0");
+  if (contentLength > 16_384) throw new HttpError("요청 크기가 너무 큽니다.", 413);
+  if (!contentType.includes("application/json")) throw new HttpError("JSON 형식으로 보내 주세요.", 415);
+
+  const body: unknown = await request.json().catch(() => {
+    throw new HttpError("요청 본문을 읽지 못했습니다.", 400);
+  });
+  if (!body || typeof body !== "object") throw new HttpError("요청 본문이 올바르지 않습니다.", 400);
+  const record = body as Record<string, unknown>;
+  const fields = readInquiryFields({
+    name: typeof record.name === "string" ? record.name : "",
+    contact: typeof record.contact === "string" ? record.contact : "",
+    title: typeof record.title === "string" ? record.title : "",
+    content: typeof record.content === "string" ? record.content : "",
+    consent: record.consent === true,
+  });
+
+  const id = crypto.randomUUID();
+  await env.DB.prepare(
+    "INSERT INTO inquiries (id, name, contact, title, content, consented) VALUES (?, ?, ?, ?, ?, 1)",
+  )
+    .bind(id, fields.name, fields.contact, fields.title, fields.content)
+    .run();
+  const created = await readInquiry(env, id);
+  if (!created) throw new HttpError("문의를 저장하지 못했습니다.", 500);
+  return created;
+}
+
+function readInquiryFields(input: { name: string; contact: string; title: string; content: string; consent: boolean }) {
+  const name = input.name.trim();
+  const contact = input.contact.trim();
+  const title = input.title.trim();
+  const content = input.content.trim();
+  if (!input.consent) throw new HttpError("개인정보 수집 및 이용에 동의해 주세요.", 400);
+  if (!name) throw new HttpError("이름을 입력해 주세요.", 400);
+  if (name.length > inquiryLimits.name) throw new HttpError(`이름은 ${inquiryLimits.name}자 이하로 입력해 주세요.`, 400);
+  if (!contact) throw new HttpError("연락처를 입력해 주세요.", 400);
+  if (contact.length > inquiryLimits.contact) {
+    throw new HttpError(`연락처는 ${inquiryLimits.contact}자 이하로 입력해 주세요.`, 400);
+  }
+  if (!title) throw new HttpError("제목을 입력해 주세요.", 400);
+  if (title.length > inquiryLimits.title) throw new HttpError(`제목은 ${inquiryLimits.title}자 이하로 입력해 주세요.`, 400);
+  if (!content) throw new HttpError("문의 내용을 입력해 주세요.", 400);
+  if (content.length > inquiryLimits.content) {
+    throw new HttpError(`내용은 ${inquiryLimits.content}자 이하로 입력해 주세요.`, 400);
+  }
+  return { name, contact, title, content };
+}
+
+function toInquiry(row: InquiryRow, includeContent: boolean) {
+  return {
+    id: row.id,
+    name: row.name,
+    contact: row.contact,
+    title: row.title,
+    createdAt: row.created_at,
+    ...(includeContent ? { content: row.content } : {}),
+  };
 }
 
 function readPostFields(input: { category: string; title: string; author: string; content: string }) {
